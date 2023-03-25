@@ -1,0 +1,6 @@
+//called from UI to send a request to author_ide and theia to sync the theme with UI
+function change_theme(theme_color) {
+    if (author_ide_loaded) author_ide_frame.postMessage({type: "update_theme", color: theme_color}, author_ide_origin);
+    if (theia_loaded) theia_frame.postMessage({type: "update_theme", color: theme_color}, theia_origin);
+
+}

@@ -1,0 +1,104 @@
+function startReceiveNotifications(token, url) {
+    console.log("starting receiving notifications")
+    var unreadNotifications = []
+    var readNotifications = []
+    var socket = io(url + '/notification', {
+        extraHeaders: {
+            Authorization: "Bearer " + token
+        }
+    })
+    socket.on("connect", function () {
+        console.log("connected to notification websocket");
+    })
+    socket.on("disconnect", function () {
+        console.log("disconnected from notification websocket");
+    })
+    socket.on("message", function (message) {
+        console.log("received notification");
+        console.log(message);
+        unreadNotifications.push({ date: message.date, message: message.data.message })
+        updateNotificationsView();
+    })
+
+    function setUnreadNotificationCount(count) {
+        var elNotificationsCount = document.querySelector("#notifications_count");
+        if (!elNotificationsCount) { return; }
+        elNotificationsCount.innerHTML = count ? count : "";
+    }
+
+    function clearNotificationsView() {
+        var elNotifications = document.querySelector("ul#notifications");
+        if (!elNotifications) { return; }
+        elNotifications.innerHTML = "";
+    }
+    function updateNotificationsView() {
+        function sortByDate(a, b) {
+            // function that sorts notifications from most to least recent
+            return Date.parse(a.date) < Date.parse(b.date) ? 1 : -1;
+        }
+
+        // re-build the notifications view
+        clearNotificationsView();
+        setUnreadNotificationCount(unreadNotifications.length);
+        if (unreadNotifications.length > 0) {
+            unreadNotifications.sort(sortByDate);
+            displayUnreadNotificationsView();
+        }
+        if (readNotifications.length > 0) {
+            readNotifications.sort(sortByDate);
+            displayReadNotificationsView();
+        }
+    }
+
+    function displayUnreadNotificationsView() {
+
+        var notificationsWindow = document.querySelector("ul#notifications");
+
+        var markAllRead = document.createElement("li");
+        markAllRead.innerHTML =
+            '<span id="mark_all_read" href="#">Mark all notifications read</span>';
+        markAllRead.onclick = function () {
+            readNotifications = readNotifications.concat(unreadNotifications)
+            unreadNotifications = []
+            updateNotificationsView();
+        };
+        notificationsWindow.appendChild(markAllRead);
+
+        unreadNotifications.forEach(function (unreadNotification) {
+            var notificationListEl = document.createElement("li");
+            notificationListEl.classList = "notification";
+            notificationListEl.innerHTML =
+                '<div> \
+                <span>' +
+                unreadNotification.message +
+                "</span> \
+                </div>";
+            notificationsWindow.appendChild(notificationListEl);
+        });
+    }
+
+    function displayReadNotificationsView() {
+        var notificationsWindow = document.querySelector("ul#notifications");
+
+        var previousNotificationsDivider = document.createElement("li");
+        previousNotificationsDivider.id = "previous_notifications";
+        previousNotificationsDivider.innerHTML =
+            "<span>Previous Notifications</span>";
+        notificationsWindow.appendChild(previousNotificationsDivider);
+
+        readNotifications.forEach(function (readNotification) {
+            var notificationListEl = document.createElement("li");
+            notificationListEl.classList = "notification read";
+            notificationListEl.innerHTML =
+                '<div"> \
+                <span>' +
+                readNotification.message +
+                "</span> \
+                </div>";
+            notificationsWindow.appendChild(notificationListEl);
+        });
+    }
+
+}
+
+

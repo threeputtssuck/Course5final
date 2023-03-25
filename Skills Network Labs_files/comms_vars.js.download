@@ -1,0 +1,23 @@
+// shared variables and functions used inside ui_requests.js, iframe_comms.js and html script tags
+
+let theia_frame;
+let theia_origin;
+let author_ide_frame;
+let author_ide_origin;
+let author_ide_loaded=false;
+let theia_loaded=false;
+
+function setFramesOrigin(author_ide_url, theia_url){
+    try{
+        theia_origin = new URL(theia_url).origin;
+    }
+    catch(e){
+        theia_origin = ""
+    }
+    author_ide_origin = author_ide_url;
+}
+
+function setFrames(){
+    theia_frame = window.frames.tool_iframe_name;
+    author_ide_frame = window.frames.author_ide_iframe_name;
+}
